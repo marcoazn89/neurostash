@@ -3,7 +3,7 @@ include_once('authentication.php');
 include_once('request.php');
 include_once('dataHandler.php');
 
-class UI_Controller extends CI_Controller {
+class Ui_controller extends CI_Controller {
 
 	use Authentication;
 	use DataHandler;

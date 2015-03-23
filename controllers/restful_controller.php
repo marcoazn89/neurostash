@@ -4,7 +4,7 @@ include_once('core/parameters.php');
 include_once('core/crud_service.php');
 include_once('core/authentication.php');
 
-class Restful_Controller extends CI_Controller {
+class Restful_controller extends CI_Controller {
 
 	use Authentication;
 
