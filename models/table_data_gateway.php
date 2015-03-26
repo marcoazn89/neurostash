@@ -199,14 +199,63 @@ class Table_Data_Gateway extends CI_Model {
 
 		$this->db->from("{$entity}");
 		$this->relationship_handler($entity, $parameters);
-		//die(var_dump($this->table_tracker));
+		//die(json_encode($this->table_tracker));
+		//$this->db->get();
+		
 		$db_results = $this->db->get()->result_array();
 		//die(var_dump($db_results));
 		//die(var_dump($this->result_extractor($db_results)));
-		return $this->result_extractor($db_results, "{$entity}");
+		//return $this->result_extractor($db_results, "{$entity}");
+		$result = array();
+		$this->recursive_extractor($db_results, "{$entity}", $result);
 		
+		return $result;
 	}
 
+	private function recursive_extractor(Array $data, $entity, Array &$result) {
+		$segments = array_keys(array_unique(array_column($data, "{$entity}_id")));
+
+		if(count($segments) == 1 && count($this->table_tracker[$entity]['children']) < 1) {
+			$original = array_intersect_key($data[$segments[0]], array_flip($this->table_tracker[$entity]['keys']));
+			$result = array_combine($this->table_tracker[$entity]['realkeys'], $original);
+		}
+		elseif(count($segments) == 1 && count($this->table_tracker[$entity]['children']) >= 1) {
+			$original = array_intersect_key($data[$segments[0]], array_flip($this->table_tracker[$entity]['keys']));
+			$result = array_combine($this->table_tracker[$entity]['realkeys'], $original);
+
+			foreach($this->table_tracker[$entity]['children'] as $children) {
+				$result[$children] = array();
+				$this->recursive_extractor($data, $children, $result[$children]);
+			}
+		}
+		else {
+			//There are 2 or more objects
+			for($i = 0; $i < count($segments); $i++) {
+				$original = array_intersect_key($data[$segments[$i]], array_flip($this->table_tracker[$entity]['keys']));
+				array_push($result, array_combine($this->table_tracker[$entity]['realkeys'], $original));
+
+				if(count($this->table_tracker[$entity]['children']) >= 1) {
+					foreach($this->table_tracker[$entity]['children'] as $children) {
+						$subset = $this->data_by_range($data, $segments[$i], $segments[count($segments)-1] === $segments[$i] ? count($data)-1 : $segments[$i+1] - 1);
+						$result[count($result)-1][$children] = array();
+						$this->recursive_extractor($subset, $children, $result[count($result)-1][$children]);
+					}
+				}
+			}
+		}
+	}
+
+	private function data_by_range(Array $data, $start, $end) {
+		$new = array();
+
+		for($i = $start; $i <= $end; $i++) {
+			array_push($new, $data[$i]);
+		}
+
+		return $new;
+	}
+
+	//@deprecated
 	private function result_extractor(Array $db_result, $root) {
 		$result = array();
 		$pointers = array();
@@ -227,20 +276,33 @@ class Table_Data_Gateway extends CI_Model {
 				else {
 					if(isset($pointers[$entity])) {
 						if(isset($pointers[$entity][0])) {
-							if(array_search($row["{$entity}_id"], array_column($pointers[$entity], "id")) == false) {
-								$original = array_intersect_key($row, array_flip($details['keys']));
-								array_push($pointers[$entity], array_combine($details['realkeys'], $original));
-								$pointers[$entity] = &$pointers[$entity];
+							if(! isset($pointers[$details['parent']][0])) {
+								if(array_search($row["{$entity}_id"], array_column($pointers[$entity], "id")) == false) {
+									$original = array_intersect_key($row, array_flip($details['keys']));
+									array_push($pointers[$entity], array_combine($details['realkeys'], $original));
+									$pointers[$entity] = &$pointers[$entity];
+								}
+							}
+							else {
+								if(array_search($row["{$entity}_id"], array_column($pointers[$details['parent']][$x-1][$entity], "id")) == false) {
+									$original = array_intersect_key($row, array_flip($details['keys']));
+									array_push($pointers[$details['parent']][$x-1][$entity], array_combine($details['realkeys'], $original));
+									$pointers[$details['parent']][$x-1][$entity] = &$pointers[$details['parent']][$x-1][$entity];
+								}
 							}
 						}
 						else {
-							if($pointers[$entity]["id"] != $row["{$entity}_id"]) {
+							if($pointers[$entity]["id"] != $row["{$entity}_id"] && ! isset($pointers[$details['parent']][0])) {
 								$prev = $pointers[$entity];
 								$pointers[$entity] = array();	
 								array_push($pointers[$entity], $prev);
 								$original = array_intersect_key($row, array_flip($details['keys']));
 								array_push($pointers[$entity], array_combine($details['realkeys'], $original));
 								$pointers[$entity] = &$pointers[$entity];
+							}
+							elseif($pointers[$entity]["id"] != $row["{$entity}_id"] && isset($pointers[$details['parent']][0])) {
+								$original = array_intersect_key($row, array_flip($details['keys']));
+								$pointers[$details['parent']][$x-1] = &$pointers[$entity];
 							}
 						}
 					}
@@ -431,6 +493,12 @@ class Table_Data_Gateway extends CI_Model {
 		else {
 			$this->table_tracker[$table]['depth'] = $depth;
 			$this->table_tracker[$table]['parent'] = "{$parent}";
+			$this->table_tracker["{$table}"]['children'] = array();
+			
+			if( ! is_null($parent)) {
+				array_push($this->table_tracker["{$parent}"]['children'], $table);
+			}
+
 			return true;
 		}
 	}

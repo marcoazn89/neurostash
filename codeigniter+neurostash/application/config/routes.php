@@ -52,7 +52,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['default_controller'] = 'welcome';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
-$route['auth'] = "restful/auth";
+$route['auth'] = "restful_controller/auth";
 $route['api/v1.0/(:any)'] = "restful_controller/handler/$1";
 $route['api/v1.0/(:any)/(:any)'] = "restful_controller/handler/$1/$2";
 $route['api/v1.0/(:any)/(:any)/(:any)'] = "restful_controller/handler/$1/$2/$3";
