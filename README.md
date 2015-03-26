@@ -1,2 +1,0 @@
-# neurostash
-NeuroStash Framework
