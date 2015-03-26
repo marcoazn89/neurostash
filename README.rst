@@ -1,11 +1,16 @@
 ###################
-NeuroStash
+NeuroStash 
 ###################
 
 *******
 Website
 *******
 `neurostash.org <http://neurostash.org>`_
+
+******************
+Important Notice
+******************
+NeuroStash is still in a experimental stage.
 
 *******************
 Server Requirements
