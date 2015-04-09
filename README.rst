@@ -2,11 +2,6 @@
 NeuroStash 
 ###################
 
-*******
-Website
-*******
-`neurostash.org <http://neurostash.org>`_
-
 ******************
 Important Notice
 ******************
