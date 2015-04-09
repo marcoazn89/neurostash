@@ -212,32 +212,83 @@ class Table_Data_Gateway extends CI_Model {
 		return $result;
 	}
 
-	private function recursive_extractor(Array $data, $entity, Array &$result) {
+	/**
+	 * Extract the results from a Query
+	 * @param  Array  $data    An array containing query results
+	 * @param  String $entity  A string to identify the current entity that is being extracted
+	 * @param  Array  &$result A placeholder to put the results
+	 * @return void
+	 */
+	private function recursive_extractor(Array $data, $entity, &$result) {
+		//For the given data set $data, get unique rows by $entity id
 		$segments = array_keys(array_unique(array_column($data, "{$entity}_id")));
+		//die(var_dump(count($segments)));
+		if($this->table_tracker[$entity]['parent'] == '' && count($segments) == 0) {
+			$result = (object) null;
+		}
 
+		if(count($segments) == 1 && is_null($data[$segments[0]]["{$entity}_id"])) {
+			return;
+		}
+		//If the number of unique rows is equal to one and the entity have no children
 		if(count($segments) == 1 && count($this->table_tracker[$entity]['children']) < 1) {
 			$original = array_intersect_key($data[$segments[0]], array_flip($this->table_tracker[$entity]['keys']));
-			$result = array_combine($this->table_tracker[$entity]['realkeys'], $original);
-		}
+			//die(json_encode($this->table_tracker[$entity]));
+			if(is_array($result) && $this->table_tracker[$entity]['parent'] != '') {
+				array_push($result, array_combine($this->table_tracker[$entity]['realkeys'], $original));
+			}
+			else {
+				$result = array_combine($this->table_tracker[$entity]['realkeys'], $original);
+			}
+			//$result = array_combine($this->table_tracker[$entity]['realkeys'], $original);
+		}//If the number of unique rows is equal to one and the entity have one or more children
 		elseif(count($segments) == 1 && count($this->table_tracker[$entity]['children']) >= 1) {
 			$original = array_intersect_key($data[$segments[0]], array_flip($this->table_tracker[$entity]['keys']));
-			$result = array_combine($this->table_tracker[$entity]['realkeys'], $original);
+			
+			if(is_array($result) && $this->table_tracker[$entity]['parent'] != '') {
+				array_push($result, array_combine($this->table_tracker[$entity]['realkeys'], $original));
+			}
+			else {
+				$result = array_combine($this->table_tracker[$entity]['realkeys'], $original);
+			}
 
-			foreach($this->table_tracker[$entity]['children'] as $children) {
-				$result[$children] = array();
+			//figure out here if the children is a one to one or one to many
+			//so that $result can be an array or non array
+			//based on that do push array or not
+			foreach($this->table_tracker[$entity]['children'] as $children => $type) {
+				if($type == 'has_one') {
+					$result[$children] = null;
+				}
+				else {
+					$result[$children] = array();	
+				}
+				
 				$this->recursive_extractor($data, $children, $result[$children]);
 			}
-		}
+		}//If the nuber of unique rows is greater than one
 		else {
-			//There are 2 or more objects
 			for($i = 0; $i < count($segments); $i++) {
 				$original = array_intersect_key($data[$segments[$i]], array_flip($this->table_tracker[$entity]['keys']));
-				array_push($result, array_combine($this->table_tracker[$entity]['realkeys'], $original));
+
+				if(is_array($result)) {
+					array_push($result, array_combine($this->table_tracker[$entity]['realkeys'], $original));
+				}
+				else {
+					$result = array_combine($this->table_tracker[$entity]['realkeys'], $original);
+				}
+
+				//array_push($result, array_combine($this->table_tracker[$entity]['realkeys'], $original));
 
 				if(count($this->table_tracker[$entity]['children']) >= 1) {
-					foreach($this->table_tracker[$entity]['children'] as $children) {
+					foreach($this->table_tracker[$entity]['children'] as $children => $type) {
 						$subset = $this->data_by_range($data, $segments[$i], $segments[count($segments)-1] === $segments[$i] ? count($data)-1 : $segments[$i+1] - 1);
-						$result[count($result)-1][$children] = array();
+						//$result[count($result)-1][$children] = array();
+						if($type == 'has_one') {
+							$result[count($result)-1][$children] = null;
+						}
+						else {
+							$result[count($result)-1][$children] = array();
+						}
 						$this->recursive_extractor($subset, $children, $result[count($result)-1][$children]);
 					}
 				}
@@ -475,7 +526,7 @@ class Table_Data_Gateway extends CI_Model {
 				$this->db->join($entity2, "{$entity1}.id={$entity2}.{$entity1}_id", 'left');
 				break;
 		}
-	}
+	} 
 
 	private function generate_conditions($entity, $parameters) {
 		if($parameters->strict_search) {
@@ -496,7 +547,8 @@ class Table_Data_Gateway extends CI_Model {
 			$this->table_tracker["{$table}"]['children'] = array();
 			
 			if( ! is_null($parent)) {
-				array_push($this->table_tracker["{$parent}"]['children'], $table);
+				//$this->table_tracker["{$parent}"]['children'][$table] = null;
+				$this->table_tracker["{$parent}"]['children'][$table] = $parent->type_of_relationship($table);
 			}
 
 			return true;
