@@ -116,7 +116,7 @@ class Restful_controller extends CI_Controller {
 			$entityValues['id'] = (int)$this->param1;
 		}
 		elseif( ! is_null($this->param1) && ! is_null($this->param2)) {
-			$entityValues[strtolower($this->param1)] = urldecode($this->param2);
+			$entityValues[$this->param1] = urldecode($this->param2);
 		}
 		elseif(isset($entityValues['id'])) {
 			$entityValues['id'] = (int)$entityValues['id'];
