@@ -1,0 +1,35 @@
+{
+    "name": "marcoazn89/neurostash",
+    "license": "MIT",
+    "description": "NeuroStash Framework",
+    "keywords": ["library", "rest", "crud", "back-end"],
+    "homepage": "https://github.com/marcoazn89/NeuroStash",
+    "authors": [
+        {
+            "name": "Marco A. Chang",
+            "homepage": "https://github.com/marcoazn89",
+            "role": "Software Engineer"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/marcoazn89/plankter"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/marcoazn89/BooBoo"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "marcoazn89/plankter": "dev-master",
+        "marcoazn89/BooBoo": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "BooBoo\\": "",
+            "HTTP\\":"HTTP/"
+        }
+    }
+}
