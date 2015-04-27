@@ -53,6 +53,9 @@ class Restful_controller extends CI_Controller {
 	 */
 	public function handler($entity, $param1 = null, $param2 = null, $param3 = null) {
 
+		$this->oauth();
+		unset($_GET['access_token']);
+		unset($_POST['access_token']);
 		$this->param1 = $param1;
 		$this->param2 = $param2;
 		$this->param3 = $param3;
@@ -174,21 +177,7 @@ class Restful_controller extends CI_Controller {
 		return $entityValues;
 	}
 
-	public function auth() {
-
-		$auth = "true";
-
-		if( ! $this->isInSession()) {
-			//Check if the client can login
-			if( ! $this->login()) {
-				$auth = "false";
-			}
-		}
-
-		echo json_encode(array("authenticated" => $auth));
-	}
-
-	private function login() {
+	public function token() {
 		$toBeAuth = array('user' => array('email', 'password'));
 
 		$auth = false;
@@ -215,6 +204,30 @@ class Restful_controller extends CI_Controller {
 			}
 		}
 
-		return $auth;
+		if($auth) {
+			echo json_encode((object)array('access_token' => $this->token));
+		}
+		else {
+			echo json_encode((object)array('error' => 'wrong credentials'));;
+		}
+	}
+
+	public function oauth() {
+		$this->load->library('session');
+		$data = $this->session->userdata('logged_in');
+		
+		if( ! isset($_REQUEST['access_token'])) {
+			echo json_encode((object)array('error' => 'access token missing in request'));
+			die;
+		}
+		else {
+			if($_REQUEST['access_token'] === $data['token']) {
+				return;
+			}
+			else {
+				echo json_encode((object)array('error' => 'invalid token'));
+				die;
+			}			
+		}
 	}
 }

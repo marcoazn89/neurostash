@@ -58,7 +58,7 @@ trait Authentication {
 		}
 
 		//$user = $this->entity_data[0];
-		$user = $this->entity_data;
+		$user = $this->entity_data[0];
 
 		$password = $this->create_hash(array($password, $user['salt']));
 
@@ -69,24 +69,30 @@ trait Authentication {
 		}
 
 		$this->load->library('session');
-
+		$this->session->sess_table_name = 'sessions';
 		$session_str = $this->create_hash(array(
-			$this->session->userdata('ip_address'),
-			$this->session->userdata('user_agent'),	
+			$_SERVER['REMOTE_ADDR'],
+			$_SERVER['HTTP_USER_AGENT'],	
 			$password
 			));
+		$this->token = $this->makeToken(array($_SERVER['REMOTE_ADDR'],$_SERVER['HTTP_USER_AGENT'],$password,time()));
 
 		$session_arr = array(
 			'username'	=>	$username,
 			'entity'	=>	"{$this->entity}",
 			'usr_field'	=>	"{$this->username_field}",
 			'psw_field'	=>	"{$this->password_field}",
-			'string'	=>	$session_str);
+			'string'	=>	$session_str,
+			'token'		=>  $this->token);
 
 		$this->session->set_userdata('logged_in', $session_arr);
-				
+		
 		return true;
 	}
+
+	public function makeToken(array $data) {
+		return sha1(implode('', $data));
+	} 
 
 	public function killSession() {
 		$this->session->sess_destroy();

@@ -918,6 +918,8 @@ abstract class CI_DB_query_builder extends CI_DB_driver {
 		}
 
 		is_bool($escape) OR $escape = $this->_protect_identifiers;
+		// lowercase $side in case somebody writes e.g. 'BEFORE' instead of 'before' (doh)
+		$side = strtolower($side);
 
 		foreach ($field as $k => $v)
 		{
@@ -1353,9 +1355,10 @@ abstract class CI_DB_query_builder extends CI_DB_driver {
 	 * returned by an Query Builder query.
 	 *
 	 * @param	string
+	 * @param	bool	the reset clause
 	 * @return	int
 	 */
-	public function count_all_results($table = '')
+	public function count_all_results($table = '', $reset = TRUE)
 	{
 		if ($table !== '')
 		{
@@ -1366,7 +1369,11 @@ abstract class CI_DB_query_builder extends CI_DB_driver {
 		$result = ($this->qb_distinct === TRUE)
 			? $this->query($this->_count_string.$this->protect_identifiers('numrows')."\nFROM (\n".$this->_compile_select()."\n) CI_count_all_results")
 			: $this->query($this->_compile_select($this->_count_string.$this->protect_identifiers('numrows')));
-		$this->_reset_select();
+
+		if ($reset === TRUE)
+		{
+			$this->_reset_select();
+		}
 
 		if ($result->num_rows() === 0)
 		{
@@ -2248,7 +2255,7 @@ abstract class CI_DB_query_builder extends CI_DB_driver {
 			else
 			{
 				// Cycle through the "select" portion of the query and prep each column name.
-				// The reason we protect identifiers here rather then in the select() function
+				// The reason we protect identifiers here rather than in the select() function
 				// is because until the user calls the from() function we don't know if there are aliases
 				foreach ($this->qb_select as $key => $val)
 				{

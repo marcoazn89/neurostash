@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/marcoazn89/BooBoo.git",
-                "reference": "c32f914a666dce64bca72780bc400da5d72070b4"
+                "reference": "66f92f0cfc389307287022f4845e8d2ace79766f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/marcoazn89/BooBoo/zipball/c32f914a666dce64bca72780bc400da5d72070b4",
-                "reference": "c32f914a666dce64bca72780bc400da5d72070b4",
+                "url": "https://api.github.com/repos/marcoazn89/BooBoo/zipball/66f92f0cfc389307287022f4845e8d2ace79766f",
+                "reference": "66f92f0cfc389307287022f4845e8d2ace79766f",
                 "shasum": ""
             },
             "require": {
@@ -54,7 +54,7 @@
                 "source": "https://github.com/marcoazn89/BooBoo/tree/master",
                 "issues": "https://github.com/marcoazn89/BooBoo/issues"
             },
-            "time": "2015-04-20 16:15:34"
+            "time": "2015-04-24 19:49:04"
         },
         {
             "name": "marcoazn89/plankter",
