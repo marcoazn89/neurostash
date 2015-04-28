@@ -92,6 +92,7 @@ class Restful_controller extends CI_Controller {
 				break;
 		}
 
+		header("Content-Type: application/json");
 		echo $response;
 	}
 
@@ -205,9 +206,11 @@ class Restful_controller extends CI_Controller {
 		}
 
 		if($auth) {
+			header("Content-Type: application/json");
 			echo json_encode((object)array('access_token' => $this->token));
 		}
 		else {
+			header("Content-Type: application/json");
 			echo json_encode((object)array('error' => 'wrong credentials'));;
 		}
 	}
@@ -217,6 +220,7 @@ class Restful_controller extends CI_Controller {
 		$data = $this->session->userdata('logged_in');
 		
 		if( ! isset($_REQUEST['access_token'])) {
+			header("Content-Type: application/json");
 			echo json_encode((object)array('error' => 'access token missing in request'));
 			die;
 		}
@@ -225,6 +229,7 @@ class Restful_controller extends CI_Controller {
 				return;
 			}
 			else {
+				header("Content-Type: application/json");
 				echo json_encode((object)array('error' => 'invalid token'));
 				die;
 			}			
