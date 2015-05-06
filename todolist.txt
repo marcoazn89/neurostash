@@ -1,0 +1,12 @@
+notes:
+- Accept mixed types: When doing a POST, accept json or form
+- Adapt has_read_requirements
+- Add security
+- Make token requirement more flexible
+- Add restful functions
+- Itegrate plankter
+- Integrate booboo
+- Fix table_data_gateway so that the return objects are not hardcoded to restful standards
+- Make neurostash more deployable by using composer
+- Create own routing
+- Make neurostash components more independant so that updates don't mess up everything and it can be integrated with other code
