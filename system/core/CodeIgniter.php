@@ -1,5 +1,5 @@
 <?php
-require './vendor/autoload.php';
+require dirname(BASEPATH).'/vendor/autoload.php';
 
 use BooBoo\BooBoo;
 
