@@ -63,7 +63,7 @@
  * Different environments will require different levels of error reporting.
  * By default development will show errors but testing and live will hide them.
  */
-/*switch (ENVIRONMENT)
+switch (ENVIRONMENT)
 {
 	case 'development':
 		error_reporting(-1);
@@ -87,7 +87,7 @@
 		header('HTTP/1.1 503 Service Unavailable.', TRUE, 503);
 		echo 'The application environment is not set correctly.';
 		exit(1); // EXIT_ERROR
-}*/
+}
 
 /*
  *---------------------------------------------------------------

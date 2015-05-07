@@ -1,8 +1,4 @@
 <?php
-require dirname(BASEPATH).'/vendor/autoload.php';
-
-use BooBoo\BooBoo;
-
 /**
  * CodeIgniter
  *
