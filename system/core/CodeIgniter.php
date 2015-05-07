@@ -1,7 +1,4 @@
 <?php
-require './vendor/autoload.php';
-
-use BooBoo\BooBoo;
 /**
  * CodeIgniter
  *
@@ -135,10 +132,9 @@ if ( ! is_php('5.4'))
  *  Define a custom error handler so we can log PHP errors
  * ------------------------------------------------------
  */
-	/*set_error_handler('_error_handler');
+	set_error_handler('_error_handler');
 	set_exception_handler('_exception_handler');
-	register_shutdown_function('_shutdown_handler');*/
-	BooBoo::setUp();
+	register_shutdown_function('_shutdown_handler');
 
 /*
  * ------------------------------------------------------
