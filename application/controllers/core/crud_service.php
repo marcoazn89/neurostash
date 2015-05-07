@@ -31,7 +31,7 @@ class CRUD_Service {
     public function read($entity, Array $values, Parameters $parameters) {
     	$class_factory = new Class_Factory($entity);
 		$obj = $class_factory->get_concrete_class();
-		
+
 		foreach($values as $attribute => $value) {
 
 			if(property_exists($obj, $attribute))
@@ -118,7 +118,7 @@ class CRUD_Service {
 	public function create($entity, Array $values, Parameters $parameters) {
 		$class_factory = new Class_Factory($entity);
 		$obj = $class_factory->get_concrete_class();
-		
+
 		foreach($values as $attribute => $value) {
 			if(property_exists($obj, $attribute))
 			{
@@ -229,38 +229,14 @@ class CRUD_Service {
 	}
 
 	public function delete($entity, Array $values, Parameters $parameters) {
-
 		$class_factory = new Class_Factory($entity);
 		$obj = $class_factory->get_concrete_class();
 
-		foreach($values as $attribute => $value) {
-			if(property_exists($obj, $attribute))
-			{
-				$obj->$attribute = $value;
-				$obj->active_attributes(TRUE);
-			}
-			elseif($obj->valid_relationship(explode('_', $attribute)[0]))
-			{
-				$entity_value = explode('_', $attribute);
-
-				if($entity_value[1] != 'id')
-				{
-					throw new Exception("You may only pass an id", 1);
-				}
-				
-					$class_factory = new Class_Factory($entity_value[0]);
-					$related_obj = $class_factory->get_concrete_class();
-					$related_obj->$entity_value[1] = $value;
-
-					$obj->{$obj->type_of_relationship((string)$related_obj)}($related_obj);
-			
-
-				$obj->active_attributes(TRUE);
-			}
-			else
-			{
-				throw new Exception("Unknown attribute {$attribute}", 1);
-			}
+		if(isset($values['id'])) {
+			$obj->id = $values['id'];
+		}
+		else {
+			die("Can only one entity at a time by id. For now...");
 		}
 
 		$mapper = new Data_Mapper($obj);

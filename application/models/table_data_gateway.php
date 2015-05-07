@@ -7,10 +7,9 @@ class Table_Data_Gateway extends CI_Model {
 	private $row_tracker = array();
 	private $queries = array();
 	
-	public function __construct() 
-	{
+	public function __construct() {
 		parent::__construct();
-		
+
 		$this->load->database();
 	}
 	public function update(Entity $entity, Parameters $parameters)
@@ -56,17 +55,23 @@ class Table_Data_Gateway extends CI_Model {
 			->update("{$entity}", $entity_array["{$entity}"]);
 		return $result;
 	}
-	
-	public function delete(Entity $entity)
-	{
-		$this->db
+
+	public function delete(Entity $entity) {
+		try {
+			$this->db
 			->where('id', $entity->id)
-			->delete("{$entity}"); 
+			->delete("{$entity}");
+		} catch(Exception $e) {
+			die("Unable to delete record");
+		}
+
+		return (object)array("success" => 1);
 	}
+
 	public function create(Entity $entity, Parameters $parameters) {
 		$status = false;
 		$entity->has_create_requirements();
-		
+
 		$entity_array = array(
 			"{$entity}" =>	get_object_vars($entity),
 			"other"		=>	NULL
@@ -75,8 +80,8 @@ class Table_Data_Gateway extends CI_Model {
 		//If true, then there are multiple elements being inserted
 		$add = is_null($inserted_id) ? false : true;
 		$entity_result = array();
-		if( ! empty($entity->active_relationship()))
-		{
+
+		if( ! empty($entity->active_relationship())) {
 			foreach($entity->active_relationship() as $entity_name)
 			{
 				$type_of_relationship = $entity->type_of_relationship($entity_name);
@@ -89,7 +94,7 @@ class Table_Data_Gateway extends CI_Model {
 				{
 					foreach($ent as $e)
 					{
-						$entity_array["other"]["{$entity}_{$e}"][] = array(
+						$entity_array["other"][$entity->get_relationship_name("{$e}")][] = array(
 						"{$entity}_id"	=>		&$inserted_id,
 						"{$e}_id"		=>		(int)$e->id
 						);
@@ -99,7 +104,7 @@ class Table_Data_Gateway extends CI_Model {
 			if(is_null($inserted_id)) {
 				$status = $this->db->insert("{$entity}", $entity_array["{$entity}"]);
 				$inserted_id = $this->db->insert_id();
-			}			
+			}
 			if( ! is_null($entity_array["other"]))
 			{
 				foreach($entity_array["other"] as $table => $array_data)
@@ -110,7 +115,7 @@ class Table_Data_Gateway extends CI_Model {
 					foreach($array_data as $data)
 					{
 						$status = $this->db->insert("{$table}", $data);
-						
+
 						if($status) {
 							array_push($entity_result["success"]["{$entity_name}"], $data["{$entity_name}_id"]);
 						}

@@ -43,6 +43,8 @@ class Restful_controller extends CI_Controller {
 	 * 		-	Attribute:		/video/23/name/Something
 	 * 		-	Attributes:		/video/23
 	 * 							{name: "A new name", length: 100}
+	 * 		-	Multiple:		/video/genre_name/Thriller *not yet implemented
+	 * 							{video_updatedAt:'3:14pm'}
 	 * 	DELETE:
 	 * 		-	Entity:			/video/2
 	 * 		-	Entities:		/video
@@ -89,6 +91,10 @@ class Restful_controller extends CI_Controller {
 				$entityValues = $this->parsePutURI();
 				$response = $service->update($entity, $entityValues, $parameters);
 				break;
+			case 'delete':
+				$entityValues = $this->parseDeleteURI();
+				$response = $service->delete($entity, $entityValues, $parameters);
+				break;
 		}
 
 		header("Content-Type: application/json");
@@ -131,16 +137,16 @@ class Restful_controller extends CI_Controller {
 	}
 
 	private function parsePostURI() {
-		
+
 		$entityValues = $this->request->get_request_data();
-		
+
 		if( ! is_null($this->param1) && ! is_null($this->param2) && ! is_null($this->param3)) {
 			$entityValues['id'] = (int)$this->param1;
 			$entityValues[strtolower($this->param2).'_id'] = (int)$this->param3;
 		}
 		elseif( ! is_null($this->param1) && ! is_null($this->param2)) {
 			$entityValues['id'] = (int)$this->param1;
-			$entityValues[strtolower($this->param2).'_id'] = 
+			$entityValues[strtolower($this->param2).'_id'] =
 			isset($entityValues[strtolower($this->param2).'_id']) ?
 			$entityValues[strtolower($this->param2).'_id'] :
 			die("Expecting ids for {$this->param2}, instead ids for a different entity were sent");
@@ -153,14 +159,14 @@ class Restful_controller extends CI_Controller {
 		}
 
 		$this->request->__destruct();
-
+		die(var_dump($entityValues));
 		return $entityValues;
 	}
 
 	private function parsePutURI() {
-		
+
 		$entityValues = $this->request->get_request_data();
-		
+
 		if( ! is_null($this->param1) && ! is_null($this->param2) && ! is_null($this->param3)) {
 			$entityValues['id'] = (int)$this->param1;
 			$entityValues[strtolower($this->param2)] = $this->param3;
@@ -170,6 +176,40 @@ class Restful_controller extends CI_Controller {
 		}
 		else {
 			die("Parameters were passed incorrectly. Please revise API.");
+		}
+
+		$this->request->__destruct();
+
+		return $entityValues;
+	}
+	/**Entity:			/video/2
+	 * 		-	Entities:		/video
+	 * 							{id: {1,2,3}}
+	 * 		-	A many-to-many:	/video/2/actor/1
+	 * 		-	More than one:	/video/2/actor
+	 * 			many-to-many	{actor: [4, 16, 10, 12]}*/
+	private function parseDeleteURI() {
+		$entityValues = $this->request->get_request_data();
+
+		if( ! is_null($this->param1) && ! is_null($this->param2) && ! is_null($this->param3)) {
+			$entityValues['id'] = (int)$this->param1;
+			$entityValues[strtolower($this->param2).'_id'] = $this->param3;
+		}
+		elseif( ! is_null($this->param1) && ! is_null($this->param2)) {
+			$entityValues['id'] = (int)$this->param1;
+			$entityValues[strtolower($this->param2).'_id'] =
+			isset($entityValues[strtolower($this->param2).'_id']) ?
+			$entityValues[strtolower($this->param2).'_id'] :
+			die("Expecting ids for {$this->param2}, instead ids for a different entity were sent");
+		}
+		elseif(! is_null($this->param1)) {
+			$entityValues['id'] = (int)$this->param1;
+		}
+		elseif(isset($entityValues['id'])){
+			//do nothing
+		}
+		else {
+			die("Can only pass ids as parameters");
 		}
 
 		$this->request->__destruct();
