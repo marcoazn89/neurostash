@@ -6,14 +6,14 @@ class Table_Data_Gateway extends CI_Model {
 	private $table_tracker = array();
 	private $row_tracker = array();
 	private $queries = array();
-	
+
 	public function __construct() {
 		parent::__construct();
 
 		$this->load->database();
 	}
-	public function update(Entity $entity, Parameters $parameters)
-	{
+	public function update(Entity $entity, Parameters $parameters) {
+		$entity->has_create_requirements();
 		$entity_array = array(
 			"{$entity}" =>	get_object_vars($entity),
 			"other"		=>	NULL

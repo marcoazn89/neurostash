@@ -159,7 +159,7 @@ class Restful_controller extends CI_Controller {
 		}
 
 		$this->request->__destruct();
-		die(var_dump($entityValues));
+
 		return $entityValues;
 	}
 
