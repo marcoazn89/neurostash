@@ -4,5 +4,5 @@ neurostash.sublime-workspace
 todolist.txt
 /.phpintel
 /application/controllers/entities
-#/application/config/database.php
-#/application/config/routes.php
+/application/config/database.php
+/application/config/routes.php
