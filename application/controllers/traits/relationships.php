@@ -107,7 +107,7 @@ trait Relationships {
 		return true;
 	}
 
-	
+
 	public function has_one(Entity $object)
 	{
 		$this->relationships = TRUE;
@@ -118,7 +118,7 @@ trait Relationships {
 	public function has_many(Entity $object)
 	{
 		$this->relationships = TRUE;
-		
+
 		if( ! in_array((string)$object, $this->active_relationships))
 		{
 			$this->active_relationships[] = (string)$object;
@@ -136,7 +136,7 @@ trait Relationships {
 
 	private function join_dependants(&$db, $class, $entity, $ent) {
 		if( ! is_null($class)) {
-			$db->select(Query_Builder::select_string($class));	
+			$db->select(Query_Builder::select_string($class));
 		}
 
 		$db->join($ent,"{$entity}.id={$ent}.{$entity}_id","left");
@@ -144,9 +144,9 @@ trait Relationships {
 
 	private function join_ones(&$db, $class, $entity, $ent) {
 		if( ! is_null($class)) {
-			$db->select(Query_Builder::select_string($class));	
+			$db->select(Query_Builder::select_string($class));
 		}
-		
+
 		$db->join($ent,"{$entity}.id={$ent}.{$entity}_id","left");
 	}
 
