@@ -2,6 +2,7 @@
 include_once(__DIR__.'.../../../system/core/Model.php');
 include_once(dirname(dirname(__FILE__)).'/controllers/core/class_factory.php');
 include_once('query_builder.php');
+
 class Table_Data_Gateway extends CI_Model {
 	private $table_tracker = array();
 	private $row_tracker = array();
@@ -173,16 +174,16 @@ class Table_Data_Gateway extends CI_Model {
 					return array("status" => (int)$status, "{$entity}" => array("id" => $inserted_id));
 				}
 			}
-		}*/		
+		}*/
 	}
 	public function read(Entity $entity, Parameters $parameters) {
 		$this->track_table("{$entity}");
-			
+
 		$this->db->from("{$entity}");
 		$this->relationship_handler($entity, $parameters);
 		//die(json_encode($this->table_tracker));
 		//$this->db->get();
-		
+		$this->db->order_by("{$entity}.id",'asc');
 		$db_results = $this->db->get()->result_array();
 		//die(var_dump($db_results));
 		//die(var_dump($this->result_extractor($db_results)));
@@ -198,7 +199,7 @@ class Table_Data_Gateway extends CI_Model {
 		elseif(! is_null($entity->id) && count($result) < 1) {
 			return (object)null;
 		}
-		
+
 		return $result;
 	}
 	/**
@@ -232,7 +233,7 @@ class Table_Data_Gateway extends CI_Model {
 		}//If the number of unique rows is equal to one and the entity have one or more children
 		elseif(count($segments) == 1 && count($this->table_tracker[$entity]['children']) >= 1) {
 			$original = array_intersect_key($data[$segments[0]], array_flip($this->table_tracker[$entity]['keys']));
-			
+
 			if(is_array($result) && $this->table_tracker[$entity]['parent'] != '') {
 				array_push($result, array_combine($this->table_tracker[$entity]['realkeys'], $original));
 				$r = &$result[0];
@@ -392,11 +393,11 @@ class Table_Data_Gateway extends CI_Model {
 		if($entity->has_relationships()) {
 			//If complete search is disabled, the id is not set and  it has active relationships
 			if( ! $parameters->complete &&  ! is_numeric($entity->id) && $entity->has_active_relationships()) {
-				
+
 				foreach($entity->active_relationship() as $entity_name) {
 					$type_of_relationship = $entity->type_of_relationship($entity_name);
 					$ent = $entity->get_entity($entity_name, $type_of_relationship)[0];
-					
+
 					$this->generate_conditions($ent, $parameters);
 					$this->generate_joins($type_of_relationship, $entity, $ent);
 				}
@@ -404,7 +405,7 @@ class Table_Data_Gateway extends CI_Model {
 			elseif($parameters->complete && $depth + 1 <= $parameters->depth) {
 				//is returning has_one, etc
 				foreach($entity->relationship() as $entity_name => $type_of_relationship) {
-					
+
 					$ent = $entity->get_entity($entity_name, $type_of_relationship);
 					if($type_of_relationship === 'has_many' && ! empty($ent)) {
 						$ent = $ent[0];
@@ -422,6 +423,7 @@ class Table_Data_Gateway extends CI_Model {
 			}
 		}
 	}
+
 	private function relationship_handlerr(Entity $entity, Parameters $parameters) {
 		$depth = $this->get_depth("{$entity}");
 		//Generate select satement for the given entity
@@ -444,11 +446,11 @@ class Table_Data_Gateway extends CI_Model {
 		if($entity->has_relationships()) {
 			//If complete search is disabled, the id is not set and  it has active relationships
 			if( ! $parameters->complete &&  ! is_numeric($entity->id) && $entity->has_active_relationships()) {
-				
+
 				foreach($entity->active_relationship() as $entity_name) {
 					$type_of_relationship = $entity->type_of_relationship($entity_name);
 					$ent = $entity->get_entity($entity_name, $type_of_relationship)[0];
-					
+
 					$this->generate_conditions($ent, $parameters);
 					$this->generate_joins($type_of_relationship, $entity, $ent);
 				}
@@ -456,7 +458,7 @@ class Table_Data_Gateway extends CI_Model {
 			elseif($parameters->complete && $depth + 1 <= $parameters->depth) {
 				//is returning has_one, etc
 				foreach($entity->relationship() as $entity_name => $type_of_relationship) {
-					
+
 					$ent = $entity->get_entity($entity_name, $type_of_relationship);
 					if($type_of_relationship === 'has_many' && ! empty($ent)) {
 						$ent = $ent[0];
@@ -488,15 +490,17 @@ class Table_Data_Gateway extends CI_Model {
 				$this->db->join($entity2, "{$entity1}.id={$entity2}.{$entity1}_id", 'left');
 				break;
 		}
-	} 
+	}
+
 	private function generate_conditions($entity, $parameters) {
 		if($parameters->strict_search) {
-			$this->db->where(Query_Builder::where_array($entity));	
+			$this->db->where(Query_Builder::where_array($entity));
 		}
 		else {
-			$this->db->like(Query_Builder::like_array($entity));	
+			$this->db->like(Query_Builder::like_array($entity));
 		}
 	}
+
 	private function track_table($table, $depth = 0, Entity $parent = null) {
 		if(array_key_exists($table, $this->table_tracker)) {
 			return false;
@@ -505,7 +509,7 @@ class Table_Data_Gateway extends CI_Model {
 			$this->table_tracker[$table]['depth'] = $depth;
 			$this->table_tracker[$table]['parent'] = "{$parent}";
 			$this->table_tracker["{$table}"]['children'] = array();
-			
+
 			if( ! is_null($parent)) {
 				//$this->table_tracker["{$parent}"]['children'][$table] = null;
 				$this->table_tracker["{$parent}"]['children'][$table] = $parent->type_of_relationship($table);
@@ -513,9 +517,11 @@ class Table_Data_Gateway extends CI_Model {
 			return true;
 		}
 	}
+
 	private function get_depth($table) {
 		return $this->table_tracker[$table]['depth'];
 	}
+
 	private function get_parent($table) {
 		return $this->table_tracker[$table]['parent'];
 	}
