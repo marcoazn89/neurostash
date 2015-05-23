@@ -1,5 +1,5 @@
 <?php
-include_once(dirname(dirname(__FILE__)).'/mappers/data_mapper.php');
+include_once(dirname(__DIR__).'/mappers/data_mapper.php');
 include_once('class_factory.php');
 include_once('converter.php');
 include_once('parameters.php');
@@ -234,6 +234,32 @@ class CRUD_Service {
 
 		if(isset($values['id'])) {
 			$obj->id = $values['id'];
+			unset($values['id']);
+
+			foreach($values as $attribute => $value) {
+				$temp = explode('_', $attribute);
+				$attr = substr($attribute, strlen("{$temp[0]}_"));
+
+				if($obj->valid_relationship($temp[0])) {
+					$entity_value = explode('_', $attribute);
+
+					if($attr != 'id')
+					{
+						throw new Exception("You may only pass an id", 1);
+					}
+
+					$class_factory = new Class_Factory($temp[0]);
+					$related_obj = $class_factory->get_concrete_class();
+					$related_obj->$attr = $value;
+
+					$obj->{$obj->type_of_relationship((string)$related_obj)}($related_obj);
+
+					$obj->active_attributes(TRUE);
+				}
+				else {
+					die("You may only pass an id");
+				}
+			}
 		}
 		else {
 			die("Can only one entity at a time by id. For now...");

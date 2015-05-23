@@ -1,6 +1,6 @@
 <?php
-include(dirname(dirname(dirname(__FILE__))).'/models/table_data_gateway.php');
-include_once(dirname(dirname(__FILE__)).'/core/parameters.php');
+include(dirname(dirname(__DIR__)).'/models/table_data_gateway.php');
+include_once(dirname(__DIR__).'/core/parameters.php');
 
 class Data_Mapper {
 	

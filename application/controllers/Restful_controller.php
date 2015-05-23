@@ -54,7 +54,7 @@ class Restful_controller extends CI_Controller {
 	 * 			many-to-many	{actor: [4, 16, 10, 12]}
 	 */
 	public function handler($entity, $param1 = null, $param2 = null, $param3 = null) {
-		//$this->oauth();
+		$this->oauth();
 		unset($_GET['access_token']);
 		unset($_POST['access_token']);
 		$this->param1 = $param1;
@@ -246,9 +246,15 @@ class Restful_controller extends CI_Controller {
 
 		if($auth) {
 			header("Content-Type: application/json");
-			echo json_encode((object)array('access_token' => $this->token));
+			echo json_encode((object)array(
+				'access_token' 	=> 	$this->token,
+				'expires' 		=>	$this->config->config["sess_expiration"] * 1000 //seconds to milliseconds
+				));
 		}
 		else {
+			$this->load->library('session');
+			$this->session->sess_destroy();
+			header("{$_SERVER['SERVER_PROTOCOL']} 401 Unauthorized");
 			header("Content-Type: application/json");
 			echo json_encode((object)array('error' => 'wrong credentials'));;
 		}
@@ -257,29 +263,61 @@ class Restful_controller extends CI_Controller {
 	public function oauth() {
 		$this->load->library('session');
 		$data = $this->session->userdata('logged_in');
-		
-		if( ! isset($_REQUEST['access_token'])) {
+
+		if( ! is_null($data)) {
+			if( ! isset($_REQUEST['access_token'])) {
+				header("{$_SERVER['SERVER_PROTOCOL']} 401 Unauthorized");
+				header("Content-Type: application/json");
+				echo json_encode((object)array('error' => 'access token missing in request'));
+				die;
+			}
+			else {
+				if($_REQUEST['access_token'] === $data['token']) {
+					return;
+				}
+				else {
+					header("{$_SERVER['SERVER_PROTOCOL']} 401 Unauthorized");
+					header("Content-Type: application/json");
+					echo json_encode((object)array('error' => 'invalid token'));
+					die;
+				}
+			}
+		}
+		else {
+			$this->session->sess_destroy();
+			header("{$_SERVER['SERVER_PROTOCOL']} 401 Unauthorized");
 			header("Content-Type: application/json");
-			echo json_encode((object)array('error' => 'access token missing in request'));
+			echo json_encode((object)array('error' => 'No profile in session, please login'));
+			die;
+		}
+	}
+
+	public function getToken() {
+		$this->load->library('session');
+		$data = $this->session->userdata('logged_in');
+
+		if(is_null($data)) {
+			$this->session->sess_destroy();
+			header("{$_SERVER['SERVER_PROTOCOL']} 401 Unauthorized");
+			header("Content-Type: application/json");
+			echo json_encode((object)array('error' => 'No profile in session, please login'));
 			die;
 		}
 		else {
-			if($_REQUEST['access_token'] === $data['token']) {
-				return;
-			}
-			else {
-				header("Content-Type: application/json");
-				echo json_encode((object)array('error' => 'invalid token'));
-				die;
-			}			
+			$data['access_token'] = $data['token'];
+			unset($data['token']);
+			header("Content-Type: application/json");
+			echo json_encode((object) $data);
 		}
 	}
 
 	public function profile() {
 		$this->load->library('session');
 		$data = $this->session->userdata('logged_in');
-		
+
 		if(is_null($data)) {
+			$this->session->sess_destroy();
+			header("{$_SERVER['SERVER_PROTOCOL']} 401 Unauthorized");
 			header("Content-Type: application/json");
 			echo json_encode((object)array('error' => 'No profile in session, please login'));
 			die;
@@ -290,12 +328,25 @@ class Restful_controller extends CI_Controller {
 		$parameters->response_format = 'array';
 
 		$values = array(
-			$data['usr_field'] => $data['username']
-			);
+		$data['usr_field'] => $data['username']
+		);
 
 		$entity_data = $service->read($data['entity'], $values, $parameters);
-		
+		$entity_data = $entity_data[0];
+		unset($entity_data['password']);
+		unset($entity_data['salt']);
+		unset($entity_data['id']);
+
 		header("Content-Type: application/json");
-		echo json_encode($entity_data[0]);
+		echo json_encode($entity_data);
+	}
+
+	public function logout() {
+		$this->load->library('session');
+		$this->session->sess_destroy();
+		header("{$_SERVER['SERVER_PROTOCOL']} 200 Ok");
+		header("Content-Type: application/json");
+		echo json_encode((object)array('error' => 'No profile in session, please login'));
+		die;
 	}
 }

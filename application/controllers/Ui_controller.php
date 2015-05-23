@@ -18,7 +18,7 @@ class Ui_controller extends CI_Controller {
 
 	private function isAuthReq($view) {
 		
-		include(dirname(dirname(__FILE__)).'/config/authentication.php');
+		include(dirname(__DIR__).'/config/authentication.php');
 
 		if(is_null($auth[$view])) {
 			return false;
@@ -86,7 +86,7 @@ class Ui_controller extends CI_Controller {
 			if( ! empty($data)) {
 				foreach($this->toBeAuth as $entity => $fields) {
 					$this->setAuth($entity, $fields[0], $fields[1]);
-					
+
 					if($this->authenticate($data[$fields[0]],$data[$fields[1]])) {
 						$auth = true;
 						break;

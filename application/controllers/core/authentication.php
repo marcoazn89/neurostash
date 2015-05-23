@@ -1,6 +1,6 @@
 <?php
 include_once('crud_controller.php');
-include_once(dirname(dirname(__FILE__)).'/mappers/data_mapper.php');
+include_once(dirname(__DIR__).'/mappers/data_mapper.php');
 include_once('parameters.php');
 include_once('crud_service.php');
 

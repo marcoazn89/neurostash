@@ -1,5 +1,5 @@
 <?php
-include_once(dirname(dirname(__FILE__)).'/mappers/data_mapper.php');
+include_once(dirname(__DIR__).'/mappers/data_mapper.php');
 include_once('class_factory.php');
 include_once('converter.php');
 

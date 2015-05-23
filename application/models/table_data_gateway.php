@@ -1,6 +1,6 @@
 <?php
 include_once(__DIR__.'.../../../system/core/Model.php');
-include_once(dirname(dirname(__FILE__)).'/controllers/core/class_factory.php');
+include_once(dirname(__DIR__).'/controllers/core/class_factory.php');
 include_once('query_builder.php');
 
 class Table_Data_Gateway extends CI_Model {
@@ -14,7 +14,7 @@ class Table_Data_Gateway extends CI_Model {
 		$this->load->database();
 	}
 	public function update(Entity $entity, Parameters $parameters) {
-		$entity->has_create_requirements();
+		$entity->has_update_requirements();
 		$entity_array = array(
 			"{$entity}" =>	get_object_vars($entity),
 			"other"		=>	NULL
@@ -58,15 +58,35 @@ class Table_Data_Gateway extends CI_Model {
 	}
 
 	public function delete(Entity $entity) {
-		try {
-			$this->db
-			->where('id', $entity->id)
-			->delete("{$entity}");
-		} catch(Exception $e) {
-			die("Unable to delete record");
-		}
+		if($entity->has_active_relationships()) {
+			foreach($entity->active_relationship() as $entity_name)
+			{
+				$type_of_relationship = $entity->type_of_relationship($entity_name);
+				$ent = $entity->get_entity($entity_name, $type_of_relationship);
+				$ent = $ent[0];
+				try {
+					$this->db
+					->where("{$entity}_id", $entity->id)
+					->where("{$entity_name}_id", $ent->id)
+					->delete($entity->get_relationship_name("{$ent}"));
+				} catch(Exception $e) {
+					die("Unable to delete record");
+				}
 
-		return (object)array("success" => 1);
+				return (object)array("success" => 1);
+			}
+		}
+		else {
+			try {
+				$this->db
+				->where('id', $entity->id)
+				->delete("{$entity}");
+			} catch(Exception $e) {
+				die("Unable to delete record");
+			}
+
+			return (object)array("success" => 1);
+		}
 	}
 
 	public function create(Entity $entity, Parameters $parameters) {

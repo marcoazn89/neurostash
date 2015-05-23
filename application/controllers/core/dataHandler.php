@@ -24,7 +24,7 @@ trait DataHandler {
 		//$this->load->library('session');
 		//			die(var_dump($this->session->userdata('entity')));
 		//die("handling Data");
-		include(dirname(dirname(__FILE__)).'/config/data.json');
+		include(dirname(__DIR__).'/config/data.json');
 		$this->requirements = $data;
 		$this->uri = $uri;
 

@@ -7,7 +7,7 @@ class Class_Factory {
 	public function __construct($name)
 	{
 		$this->name = $name;
-		$this->file_name = dirname(dirname(__FILE__)).'/entities/'.strtolower($name).'.php';
+		$this->file_name = dirname(__DIR__).'/entities/'.strtolower($name).'.php';
 
 		if($this->_valid_class() === FALSE)
 		{

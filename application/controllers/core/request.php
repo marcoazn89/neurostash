@@ -1,5 +1,5 @@
 <?php
-include_once(dirname(dirname(dirname(dirname(__FILE__)))).'/system/core/Input.php');
+include_once(dirname(dirname(dirname(__DIR__))).'/system/core/Input.php');
 /**
  * This class is used to grab all requests and
  * return an array such as the following:

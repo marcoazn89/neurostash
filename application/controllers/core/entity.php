@@ -25,9 +25,9 @@
  * 						interface share.
  * 						
  */
-include_once(dirname(dirname(__FILE__)).'/traits/class_helpers.php');
-include_once(dirname(dirname(__FILE__)).'/traits/data_exporters.php');
-include_once(dirname(dirname(__FILE__)).'/traits/relationships.php');
+include_once(dirname(__DIR__).'/traits/class_helpers.php');
+include_once(dirname(__DIR__).'/traits/data_exporters.php');
+include_once(dirname(__DIR__).'/traits/relationships.php');
 
 abstract class Entity implements IteratorAggregate {
 
